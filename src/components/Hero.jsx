@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import ThreeHero from './ThreeHero'
 
 export default function Hero() {
+  const [trigger, setTrigger] = useState(0)
+
   return (
     <section id="home" className="relative overflow-hidden">
       <div className="absolute inset-0 -z-10 opacity-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100 via-white to-white" />
@@ -43,6 +46,12 @@ export default function Hero() {
           >
             <a href="#projects" className="px-5 py-2.5 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors">See Projects</a>
             <a href="#contact" className="px-5 py-2.5 rounded-md border border-slate-300 text-slate-800 font-medium hover:bg-slate-50">Get in Touch</a>
+            <button
+              onClick={() => setTrigger((t) => t + 1)}
+              className="px-5 py-2.5 rounded-md bg-violet-600 text-white font-medium hover:bg-violet-700 active:scale-[0.98] transition"
+            >
+              Energize
+            </button>
           </motion.div>
         </div>
 
@@ -54,7 +63,7 @@ export default function Hero() {
             transition={{ type: 'spring', stiffness: 160, damping: 20 }}
             className="rounded-2xl"
           >
-            <ThreeHero />
+            <ThreeHero trigger={trigger} />
           </motion.div>
           <motion.div
             initial={{ y: 20, opacity: 0 }}

@@ -1,16 +1,20 @@
-import { Suspense, useMemo } from 'react'
+import { Suspense, useMemo, useEffect, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Float, OrbitControls, Environment, useTexture } from '@react-three/drei'
+import { Float, OrbitControls, Environment } from '@react-three/drei'
 import * as THREE from 'three'
 
-function RotatingBlob() {
-  const mat = useMemo(() => new THREE.MeshStandardMaterial({
-    color: new THREE.Color('#4f46e5'),
+function RotatingBlob({ kick }) {
+  const meshRef = useRef()
+  const baseColor = useMemo(() => new THREE.Color('#4f46e5'), [])
+  const emissiveColor = useMemo(() => new THREE.Color('#1e1b4b'), [])
+
+  const material = useMemo(() => new THREE.MeshStandardMaterial({
+    color: baseColor,
     roughness: 0.2,
     metalness: 0.6,
-    emissive: new THREE.Color('#1e1b4b').multiplyScalar(0.2),
+    emissive: emissiveColor.clone().multiplyScalar(0.2),
     envMapIntensity: 0.8,
-  }), [])
+  }), [baseColor, emissiveColor])
 
   const geometry = useMemo(() => {
     const g = new THREE.IcosahedronGeometry(1.2, 5)
@@ -27,22 +31,50 @@ function RotatingBlob() {
     return g
   }, [])
 
+  const pulseRef = useRef({ t: 0, active: false })
+  useEffect(() => {
+    if (kick == null) return
+    pulseRef.current.t = 0
+    pulseRef.current.active = true
+  }, [kick])
+
   useFrame((state) => {
     const t = state.clock.getElapsedTime()
-    mat.emissiveIntensity = 0.3 + Math.sin(t * 2) * 0.2
+    material.emissiveIntensity = 0.3 + Math.sin(t * 2) * 0.2
+
+    // handle click pulse animation
+    if (pulseRef.current.active) {
+      pulseRef.current.t += 0.08
+      const k = pulseRef.current.t
+      const pulse = Math.exp(-2 * k) * Math.sin(8 * k) // ring-down effect
+      const scale = 1 + pulse * 0.25
+      if (meshRef.current) {
+        meshRef.current.scale.setScalar(scale)
+      }
+      // Animate emissive + color shift
+      material.emissiveIntensity = 0.8 + Math.max(0, pulse) * 1.2
+      const temp = baseColor.clone()
+      temp.offsetHSL(0.0, 0.0, Math.max(0, pulse) * 0.1)
+      material.color.copy(temp)
+
+      if (k > 3) {
+        pulseRef.current.active = false
+        material.color.copy(baseColor)
+        if (meshRef.current) meshRef.current.scale.setScalar(1)
+      }
+    }
   })
 
   return (
     <Float speed={1.4} rotationIntensity={0.6} floatIntensity={0.8}>
-      <mesh geometry={geometry} material={mat} castShadow receiveShadow>
-        <meshStandardMaterial {...mat} />
+      <mesh ref={meshRef} geometry={geometry} material={material} castShadow receiveShadow>
+        <meshStandardMaterial attach="material" {...material} />
       </mesh>
     </Float>
   )
 }
 
 function GlowPlane() {
-  const tex = useTexture({})
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.2, 0]} receiveShadow>
       <circleGeometry args={[5, 64]} />
@@ -51,7 +83,7 @@ function GlowPlane() {
   )
 }
 
-export default function ThreeHero() {
+export default function ThreeHero({ trigger }) {
   return (
     <div className="relative h-[420px] md:h-[520px] rounded-2xl overflow-hidden border border-slate-200">
       <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 4], fov: 55 }}>
@@ -59,7 +91,7 @@ export default function ThreeHero() {
         <ambientLight intensity={0.4} />
         <directionalLight position={[5, 5, 5]} intensity={1.1} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024} />
         <Suspense fallback={null}>
-          <RotatingBlob />
+          <RotatingBlob kick={trigger} />
           <GlowPlane />
           <Environment preset="city" />
         </Suspense>
