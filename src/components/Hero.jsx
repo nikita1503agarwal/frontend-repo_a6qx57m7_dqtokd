@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import ThreeHero from './ThreeHero'
 
 export default function Hero() {
   return (
@@ -51,33 +52,17 @@ export default function Hero() {
             whileInView={{ scale: 1, opacity: 1 }}
             viewport={{ once: true }}
             transition={{ type: 'spring', stiffness: 160, damping: 20 }}
-            className="aspect-square rounded-2xl bg-gradient-to-br from-blue-600/10 via-indigo-600/10 to-cyan-500/10 border border-slate-200"
-          />
+            className="rounded-2xl"
+          >
+            <ThreeHero />
+          </motion.div>
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="absolute inset-4 rounded-2xl bg-white shadow-xl border border-slate-200 grid place-items-center text-center p-6"
-          >
-            <div>
-              <p className="text-sm text-slate-500">Currently open to full‑time roles and impactful freelance work</p>
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: 0.2 }}
-                className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 text-xs font-medium"
-              >
-                <span>Available</span>
-                <motion.span
-                  animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.1, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.8 }}
-                  className="h-2 w-2 rounded-full bg-green-500 inline-block"
-                />
-              </motion.div>
-            </div>
-          </motion.div>
+            className="absolute inset-4 pointer-events-none"
+          />
         </div>
       </div>
     </section>
